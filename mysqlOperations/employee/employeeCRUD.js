@@ -10,9 +10,9 @@ async function get_employee_info(body)
     try {
         const employeeId = (!body.empid) ? null : `"${body.empid}"`;
         await connection.promise().beginTransaction();
-        //console.log('check todate:' + body.todate);
+        const todate = (!body.todate) ? `'${new Date().toISOString().split('T')[0]}'`: `'${new Date(body.todate).toISOString().split('T')[0]}'` ;
         const pool = await connection.promise().execute(
-            `CALL ufn_get_employee ('${body.todate}' ,${employeeId})`
+            `CALL usp_get_employee (${todate} ,${employeeId})`
         );
         await connection.promise().commit();
         return pool[0][0][0];
@@ -42,9 +42,9 @@ async function insert_employee_info(body)
                 {
                     employeeId: ele.employeeId,
                     employeeName:  ele.employeeName,
-                    employedDate: new Date(ele.employedDate).toISOString().split('T')[0],
-                    birthDate: new Date(ele.birthDate).toISOString().split('T')[0],
-                    isActive: Boolean(ele.isActive)
+                    employedDate: (!ele.employedDate)? null : new Date(ele.employedDate).toISOString().split('T')[0],
+                    birthDate: (!ele.birthDate)? null : new Date(ele.birthDate).toISOString().split('T')[0],
+                    isActive: (!ele.isActive)? null : Boolean(ele.isActive)
                 }
             )
         }
@@ -77,7 +77,7 @@ async function update_employee_info(body)
             employeeName: (!body.employeeName) ? null : `'${body.employeeName}'`,
             employedDate: (!body.employedDate) ? null : `'${new Date(body.employedDate).toISOString().split('T')[0]}'`,
             birthDate: (!body.birthDate) ? null : `'${new Date(body.birthDate).toISOString().split('T')[0]}'`,
-            isActive: Boolean(body.isActive),
+            isActive: (!body.isActive) ? null : Boolean(body.isActive),
             keyid: `'${body.keyid}'`
         };
         console.log(`check valid:${employee_information}`);
