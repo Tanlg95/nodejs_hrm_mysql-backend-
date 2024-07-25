@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
-// const authToken = require('../tokenOperations/authToken');
+const authToken = require('../tokenOperations/authToken');
 const employee = require('../mysqlOperations/employee/employeeCRUD');
 const employeeFunction = require('../mysqlOperations/employee/employeeFunction');
 const position = require('../mysqlOperations/position/positionCRUD');
 const positionFunction = require('../mysqlOperations/position/positionFunction');
-// const account = require('../mysqlOperations/account/accountCRUD');
-// const accountFunction = require('../mysqlOperations/account/accountFunction');
+const account = require('../mysqlOperations/account/accountCRUD');
+const accountFunction = require('../mysqlOperations/account/accountFunction');
 
 
 //------------------------------ employee ----------------------------------//
@@ -103,7 +103,7 @@ router.post('/position/delete/:keyid',(req,res,next) =>{
 })
 
 /* get the current position of an employee */
-router.get('/position/get_max_pos',(req,res,next) =>{
+router.get('/position/get_max_pos',authToken,(req,res,next) =>{
     const body = req.body;
     positionFunction.get_max_position(body).then(
         respone => res.json(respone)
@@ -115,64 +115,62 @@ router.get('/position/get_max_pos',(req,res,next) =>{
 
 // //------------------------------ account ----------------------------------//
 
-// /* create account */
-// router.post('/account/create',(req,res,next) =>{
-//     const body = req.body;
-//     account.create_account(body).then(
-//         respone => res.json(respone)
-//     ).catch(
-//         err => next(err)
-//     );
-// })
+/* create account */
+router.post('/account/create',(req,res,next) =>{
+    account.create_account(req).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
 
-// /* update account */
-// router.post('/account/update',(req,res,next) =>{
-//     const body = req.body;
-//     account.update_account(body).then(
-//         respone => res.json(respone)
-//     ).catch(
-//         err => next(err)
-//     );
-// })
+/* update account */
+router.post('/account/update',(req,res,next) =>{
+    const body = req.body;
+    account.update_account(body).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
 
-// /* delete account */
-// router.post('/account/delete/:keyid',(req,res,next) =>{
-//     const keyid = req.params.keyid;
-//     account.delete_account(keyid).then(
-//         respone => res.json(respone)
-//     ).catch(
-//         err => next(err)
-//     );
-// })
+/* delete account */
+router.post('/account/delete',(req,res,next) =>{
+    account.delete_account(req).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
 
-// /* update token account */
-// router.post('/account/update_atoken',(req,res,next) =>{
-//     const body = req.body;
-//     account.update_token_account(body).then(
-//         respone => res.json(respone)
-//     ).catch(
-//         err => next(err)
-//     );
-// })
+/* update token account */
+router.post('/account/update_atoken',(req,res,next) =>{
+    const body = req.body;
+    account.update_token_account(body).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
 
-// /* login */
-// router.post('/account/login',(req,res,next) =>{
-//     const body = req.body;
-//     accountFunction.login(body).then(
-//         respone => res.json(respone)
-//     ).catch(
-//         err => next(err)
-//     );
-// })
+/* login */
+router.post('/account/login',(req,res,next) =>{
+    const body = req.body;
+    accountFunction.login(body).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
 
-// /* change account password */
-// router.post('/account/change_password',(req,res,next) =>{
-//     const body = req.body;
-//     accountFunction.changePassword(body).then(
-//         respone => res.json(respone)
-//     ).catch(
-//         err => next(err)
-//     );
-// })
+/* change account password */
+router.post('/account/change_password',(req,res,next) =>{
+    const body = req.body;
+    accountFunction.changePassword(body).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
 
 module.exports = router;
