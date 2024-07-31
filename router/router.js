@@ -40,10 +40,28 @@ router.post('/employee/update',(req,res,next) =>{
     );
 })
 
+/* update multi employee information */
+router.post('/employee/updateMulti',(req,res,next) =>{
+    employee.update_employee_info_multi(req).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
+
 /* delete employee information */
 router.post('/employee/delete',(req,res,next) =>{
     const body = req.body;
     employee.delete_employee_info(body).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
+
+/* delete multi employee information */
+router.post('/employee/delete',(req,res,next) =>{
+    employee.delete_employee_info_multi(req).then(
         respone => res.json(respone)
     ).catch(
         err => next(err)
@@ -92,10 +110,28 @@ router.post('/position/update',(req,res,next) =>{
     );
 })
 
+/* update multi employee position */
+router.post('/position/updateMulti',(req,res,next) =>{
+    position.update_position_employee_multi(req).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
+
 /* delete employee position */
 router.post('/position/delete/:keyid',(req,res,next) =>{
     const keyid = req.params.keyid;
     position.delete_position_employee(keyid).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
+
+/* delete multi employee position */
+router.post('/position/delete',(req,res,next) =>{
+    position.delete_position_employee(req).then(
         respone => res.json(respone)
     ).catch(
         err => next(err)
@@ -128,6 +164,15 @@ router.post('/account/create',(req,res,next) =>{
 router.post('/account/update',(req,res,next) =>{
     const body = req.body;
     account.update_account(body).then(
+        respone => res.json(respone)
+    ).catch(
+        err => next(err)
+    );
+})
+
+/* update multi account */
+router.post('/account/updateMulti',(req,res,next) =>{
+    account.update_account_multi(req).then(
         respone => res.json(respone)
     ).catch(
         err => next(err)

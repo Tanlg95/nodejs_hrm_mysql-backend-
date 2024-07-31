@@ -1,5 +1,7 @@
 const mysql = require('mysql2');
 const mysql_config = require('../../mysqlConfigure/mysqlConfig');
+const statusClass = require('../../support/status');
+const status = new statusClass();
 
 
 // get employee's position
@@ -33,7 +35,7 @@ async function insert_position_employee(body)
     const connection = mysql.createConnection(mysql_config);
     try {
         await connection.promise().beginTransaction();
-        if(!(body.body instanceof Array)) throw new Error(`body must be an array!!!`);
+        if(!(body.body instanceof Array)) throw status.errorStatus(1);
         const empposListForInsert = [];
         for(let ele of body.body)
         {
@@ -51,7 +53,10 @@ async function insert_position_employee(body)
             [empposListForInsert.map(val => [val.employeeId, val.datechange, val.posId, val.note])]
         );
         await connection.promise().commit();
-        return pool;
+        return {
+            statusId: status.operationStatus(104),
+            totalRowInserted: pool[0].affectedRows
+        };
     } catch (error) {
         await connection.promise().rollback();
         throw error;
@@ -74,14 +79,72 @@ async function update_position_employee(body)
             note: (!body.note) ? null : `'${body.note}'`,
             keyid: `'${body.keyid}'`
         };
-        const pool = connection.promise().execute(
+        const pool = await connection.promise().execute(
             `CALL usp_update_position (${empposListForUpdate.datechange}
             ,${empposListForUpdate.posId}
             ,${empposListForUpdate.note}
             ,${empposListForUpdate.keyid});`
         );
         await connection.promise().commit();
-        return pool;
+        return {
+            statusId: status.operationStatus(104),
+            totalRowModified: pool[0].affectedRows
+        };
+    } catch (error) {
+        await connection.promise().rollback();
+        throw error;
+    } finally
+    {
+        await connection.promise().end();
+    }
+}
+
+
+// update multi employee's position
+
+async function update_position_employee_multi(body)
+{
+    const connection = mysql.createConnection(mysql_config);
+    try {
+        await connection.promise().beginTransaction();
+
+        if(!(body.body instanceof Array)) throw status.errorStatus(1);
+
+        const tblemppos = body.body.map(
+            val => ({
+                datechange: (!val.datechange)? null : new Date(val.datechange).toISOString().split('T')[0],
+                posId: (!val.posId) ? null : val.posId,
+                note: (!val.note) ? null : val.note,
+                keyid: val.keyid
+            })
+        );
+
+        let queries = '';
+
+        for(let ele of tblemppos)
+        {
+            queries += mysql.format("UPDATE tblemppos SET datechange = ?, posId = ?, note = ? WHERE keyid = ? ;",
+                [ele.datechange, ele.posId, ele.note, ele.keyid]
+            );
+        }
+        const pool = await connection.promise().query(queries);
+        // const empposListForUpdate = {
+        //     datechange: (!body.datechange)? null : `'${new Date(body.datechange).toISOString().split('T')[0]}'`,
+        //     posId: (!body.posId) ? null : `'${body.posId}'`,
+        //     note: (!body.note) ? null : `'${body.note}'`,
+        //     keyid: `'${body.keyid}'`
+        // };
+        // const pool = await connection.promise().execute(
+        //     `CALL usp_update_position (${empposListForUpdate.datechange}
+        //     ,${empposListForUpdate.posId}
+        //     ,${empposListForUpdate.note}
+        //     ,${empposListForUpdate.keyid});`
+        // );
+        await connection.promise().commit();
+        return {
+            statusId: status.operationStatus(104),
+            totalRowModified: pool[0].filter(ele => ele.changedRows === 1).length
+        };
     } catch (error) {
         await connection.promise().rollback();
         throw error;
@@ -112,10 +175,47 @@ async function delete_position_employee(keyid)
     }
 }
 
+// delete multi employee's position
+
+async function delete_position_employee_multi(body)
+{
+    const connection = mysql.createConnection(mysql_config);
+    try {
+        await connection.promise().beginTransaction();
+        if(!(body.body) instanceof Array) throw status.errorStatus(1);
+        const tblempposForDelete = [];
+        for(let ele of body.body)
+        {
+            tblempposForDelete.push(
+                {keyid: ele.keyid}
+            );
+        }
+        // console.log(tblempposForDelete);
+        const pool = await connection.promise().query(
+            `DELETE FROM tblemppos WHERE keyid IN (?)`,
+            [tblempposForDelete.map(val => [val.keyid])]
+        );
+        await connection.promise().commit();
+        return {
+            statusId: status.operationStatus(104),
+            totalRowDeleted: pool[0].affectedRows
+       };
+    } catch (error) {
+        await connection.promise().rollback();
+        throw error;
+    } finally
+    {
+        connection.promise().end();
+    }
+}
+
+
 module.exports = {
     get_position_employee: get_position_employee,
     insert_position_employee: insert_position_employee,
     update_position_employee: update_position_employee,
-    delete_position_employee: delete_position_employee
+    update_position_employee_multi: update_position_employee_multi,
+    delete_position_employee: delete_position_employee,
+    delete_position_employee_multi: delete_position_employee_multi
 
 };

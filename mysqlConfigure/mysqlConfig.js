@@ -5,7 +5,8 @@ const mysql_config = {
     password: process.env.MYSQL_PASSWORD,
     host: process.env.MYSQL_HOST,
     port: Number(process.env.MYSQL_PORT),
-    database: process.env.MYSQL_DATABASE
+    database: process.env.MYSQL_DATABASE,
+    multipleStatements: true,
 };
 
 module.exports = mysql_config;
